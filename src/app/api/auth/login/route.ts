@@ -40,7 +40,9 @@ export async function POST(request: Request) {
       token = createSecureToken({ userId: user.id, role }, secret());
     }
 
-    const teams = await getAllUserTeams(id);
+    // Temporarily return empty teams array to debug
+    const teams = [];
+    // const teams = await getAllUserTeams(id);
 
     return json({
       token,

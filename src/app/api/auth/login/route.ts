@@ -48,7 +48,10 @@ export async function POST(request: Request) {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error('Login error:', message);
+    console.error(
+      'Login error full details:',
+      JSON.stringify(err, Object.getOwnPropertyNames(err)),
+    );
 
     if (message.includes('Tenant or user not found') || message.includes('row-level security')) {
       return serverError({
@@ -59,7 +62,7 @@ export async function POST(request: Request) {
     }
 
     return serverError({
-      message: 'Login failed due to database error',
+      message: `Login failed: ${message}`,
       code: 'login-error',
     });
   }

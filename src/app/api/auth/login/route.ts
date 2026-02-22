@@ -53,17 +53,9 @@ export async function POST(request: Request) {
       JSON.stringify(err, Object.getOwnPropertyNames(err)),
     );
 
-    if (message.includes('Tenant or user not found') || message.includes('row-level security')) {
-      return serverError({
-        message:
-          'Database access error - RLS policies may be blocking queries. Disable RLS in Supabase settings.',
-        code: 'database-access-error',
-      });
-    }
-
     return serverError({
-      message: `Login failed: ${message}`,
-      code: 'login-error',
+      message: `DB error: ${message}`,
+      code: 'database-access-error',
     });
   }
 }

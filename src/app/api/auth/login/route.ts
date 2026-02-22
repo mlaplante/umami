@@ -48,14 +48,11 @@ export async function POST(request: Request) {
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error(
-      'Login error full details:',
-      JSON.stringify(err, Object.getOwnPropertyNames(err)),
-    );
+    console.error('Login error:', message);
 
     return serverError({
-      message: `DB error: ${message}`,
-      code: 'database-access-error',
+      message: 'Login failed due to a database error.',
+      code: 'login-error',
     });
   }
 }

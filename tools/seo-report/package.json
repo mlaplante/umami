@@ -1,0 +1,18 @@
+{
+  "name": "umami-seo-report",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Claude Code tooling to generate custom reports from a self-hosted umami instance.",
+  "scripts": {
+    "report": "node scripts/report.mjs",
+    "mcp": "node mcp-server/server.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=18.17"
+  }
+}

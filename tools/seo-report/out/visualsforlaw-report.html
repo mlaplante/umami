@@ -1,0 +1,360 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Visuals For Law — Analytics Report · Apr 21 – May 20, 2026</title>
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --card: #ffffff;
+    --ink: #1a1f2c;
+    --ink-soft: #525a6b;
+    --muted: #8b91a1;
+    --rule: #e6e3da;
+    --accent: #1f3a8a;
+    --accent-soft: #e6ecff;
+    --good: #16794d;
+    --bad: #b3261e;
+    --chart-pv: #1f3a8a;
+    --chart-ss: #c79443;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
+  body {
+    font: 15px/1.55 "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1080px; margin: 0 auto; padding: 56px 32px 80px; }
+  header.title {
+    background: linear-gradient(135deg, #0f1a3a 0%, #1f3a8a 100%);
+    color: #fff;
+    border-radius: 12px;
+    padding: 32px 36px;
+    margin-bottom: 36px;
+    box-shadow: 0 8px 24px -12px rgba(15, 26, 58, 0.45);
+  }
+  header.title .brand { display: flex; align-items: center; gap: 26px; }
+  header.title .logo { height: 80px; width: auto; flex: 0 0 auto; }
+  header.title .brand-text { flex: 1 1 auto; min-width: 0; }
+  header.title .eyebrow {
+    text-transform: uppercase; letter-spacing: .16em; font-size: 11px;
+    color: rgba(255,255,255,0.7); font-weight: 600;
+  }
+  header.title h1 {
+    margin: 8px 0 6px; font-size: 32px; letter-spacing: -0.01em; font-weight: 700; color: #fff;
+  }
+  header.title .sub { color: rgba(255,255,255,0.78); font-size: 14px; }
+  header.title .sub strong { color: #fff; }
+  @media (max-width: 560px) {
+    header.title { padding: 24px; }
+    header.title .brand { flex-direction: column; align-items: flex-start; gap: 16px; }
+    header.title .logo { height: 60px; }
+  }
+  @media print {
+    header.title { background: #0f1a3a !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  section { margin: 40px 0; }
+  section > h2 {
+    font-size: 13px; text-transform: uppercase; letter-spacing: .12em;
+    color: var(--ink-soft); font-weight: 700; margin: 0 0 16px;
+  }
+  .lede { font-size: 17px; line-height: 1.55; color: var(--ink); max-width: 64ch; }
+
+  .kpis {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  }
+  @media (max-width: 760px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+  .kpi {
+    background: var(--card); border: 1px solid var(--rule); border-radius: 10px;
+    padding: 18px 18px 16px;
+  }
+  .kpi .label { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); font-weight: 600; }
+  .kpi .value { font-size: 28px; font-weight: 700; margin-top: 6px; letter-spacing: -0.01em; }
+  .kpi .delta { font-size: 12px; margin-top: 4px; color: var(--ink-soft); }
+  .kpi .delta.up { color: var(--good); }
+  .kpi .delta.down { color: var(--bad); }
+
+  .chart-card {
+    background: var(--card); border: 1px solid var(--rule); border-radius: 10px;
+    padding: 24px 24px 12px;
+  }
+  .chart-card .legend { display: flex; gap: 18px; margin-bottom: 8px; font-size: 12px; color: var(--ink-soft); }
+  .chart-card .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--card); border: 1px solid var(--rule); border-radius: 10px;
+    padding: 20px 22px;
+  }
+  .panel h3 { margin: 0 0 14px; font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 8px 0; font-size: 14px; border-bottom: 1px solid var(--rule); }
+  tr:last-child td { border-bottom: 0; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  .bar-cell { position: relative; padding-right: 60px; }
+  .bar-cell .bar {
+    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+    height: 6px; background: var(--accent-soft); border-radius: 3px; width: 50px; overflow: hidden;
+  }
+  .bar-cell .bar > span { display: block; height: 100%; background: var(--accent); }
+
+  .callouts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .callouts { grid-template-columns: 1fr; } }
+  .callout {
+    background: var(--card); border-left: 3px solid var(--accent); border-radius: 6px;
+    padding: 14px 16px; font-size: 14px; line-height: 1.55;
+  }
+  .callout .head { font-weight: 700; margin-bottom: 4px; }
+
+  ul.recos { margin: 0; padding-left: 20px; }
+  ul.recos li { margin-bottom: 8px; }
+
+  footer { color: var(--muted); font-size: 12px; margin-top: 56px; border-top: 1px solid var(--rule); padding-top: 16px; }
+  code { background: #efece4; padding: 1px 5px; border-radius: 3px; font-size: 12px; }
+
+  @media print {
+    body { background: white; }
+    .page { padding: 24px; }
+    .kpi, .panel, .chart-card, .callout { box-shadow: none; }
+    section { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="title">
+  <div class="brand">
+    <img class="logo" src="https://visualsforlaw.com/_astro/logo-light.DeGja0ak.svg" alt="Visuals For Law" />
+    <div class="brand-text">
+      <div class="eyebrow">Analytics Report</div>
+      <h1>Visuals For Law</h1>
+      <div class="sub"><strong>visualsforlaw.com</strong> &middot; 30-day window: April 21 – May 20, 2026</div>
+    </div>
+  </div>
+</header>
+
+<section>
+  <p class="lede">Traffic is up sharply month-over-month, driven by a concentrated three-day surge in early May. Engagement quality improved alongside volume — average time per session jumped roughly 5&times;. Top engagement is on the homepage and the AI / Rule 707 blog post; SEO and paid channels remain underdeveloped.</p>
+</section>
+
+<section>
+  <h2>Key metrics — last 30 days vs. prior 30</h2>
+  <div class="kpis">
+    <div class="kpi">
+      <div class="label">Pageviews</div>
+      <div class="value">438</div>
+      <div class="delta up">&#9650; +381% vs. prior 30d (91)</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Unique Visitors</div>
+      <div class="value">121</div>
+      <div class="delta up">&#9650; +89% vs. prior 30d (64)</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Visits / Sessions</div>
+      <div class="value">167</div>
+      <div class="delta up">&#9650; +149% vs. prior 30d (67)</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Avg. Time on Site</div>
+      <div class="value">2m 48s</div>
+      <div class="delta up">&#9650; +447% vs. prior 30d (31s)</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Pages / Visit</div>
+      <div class="value">2.6</div>
+      <div class="delta">Engagement depth</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Bounce Rate</div>
+      <div class="value">63%</div>
+      <div class="delta">105 of 167 single-page visits</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Top Country</div>
+      <div class="value">US</div>
+      <div class="delta">75% of geo-identified traffic</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Top Device</div>
+      <div class="value">Laptop</div>
+      <div class="delta">76% laptop / 18% mobile</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Traffic over time</h2>
+  <div class="chart-card">
+    <div class="legend">
+      <span><span class="swatch" style="background:var(--chart-pv)"></span>Pageviews</span>
+      <span><span class="swatch" style="background:var(--chart-ss)"></span>Sessions</span>
+    </div>
+    <div id="chart" style="width:100%; height: 320px;"></div>
+  </div>
+</section>
+
+<section>
+  <h2>What stood out</h2>
+  <div class="callouts">
+    <div class="callout">
+      <div class="head">May 2–4 surge</div>
+      Three consecutive days drove <strong>284 pageviews</strong> (65% of the month) and <strong>54 sessions</strong>. Outside this window the site averages ~6 pageviews/day. Worth identifying the source — May 4 alone produced 31 sessions vs. a typical 2–6.
+    </div>
+    <div class="callout">
+      <div class="head">Best-performing blog post</div>
+      <code>/blog/ai-courtroom-visual-evidence-rule-707/</code> drew <strong>11 pageviews</strong>, more than any other non-navigation page. Strong thesis-led content on AI in evidence rules is resonating — candidate for follow-up posts.
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Top content &amp; sources</h2>
+  <div class="grid-2">
+    <div class="panel">
+      <h3>Top pages</h3>
+      <table>
+        <thead><tr><th>Path</th><th class="n">Pageviews</th></tr></thead>
+        <tbody id="tbl-pages"></tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <h3>Top referrers</h3>
+      <table>
+        <thead><tr><th>Domain</th><th class="n">Visits</th></tr></thead>
+        <tbody id="tbl-refs"></tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <h3>Acquisition channels</h3>
+      <table>
+        <thead><tr><th>Channel</th><th class="n">Visits</th></tr></thead>
+        <tbody id="tbl-channels"></tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <h3>Top countries</h3>
+      <table>
+        <thead><tr><th>Country</th><th class="n">Visits</th></tr></thead>
+        <tbody id="tbl-countries"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Devices</h2>
+  <div class="panel">
+    <table>
+      <thead><tr><th>Device</th><th class="n">Visits</th><th class="n">Share</th></tr></thead>
+      <tbody id="tbl-devices"></tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  Report provided by <strong>La Plante Web Development</strong> &middot; Window: April 21 – May 20, 2026 &middot; All figures sourced directly from first-party aggregated analytics; no estimates.
+</footer>
+
+</div>
+
+<script type="module">
+import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+
+const pageviews = [
+  {x:"2026-04-21",y:1},{x:"2026-04-22",y:6},{x:"2026-04-23",y:12},{x:"2026-04-24",y:14},
+  {x:"2026-04-25",y:1},{x:"2026-04-27",y:2},{x:"2026-04-28",y:3},{x:"2026-04-29",y:7},
+  {x:"2026-04-30",y:2},{x:"2026-05-01",y:3},{x:"2026-05-02",y:92},{x:"2026-05-03",y:79},
+  {x:"2026-05-04",y:113},{x:"2026-05-05",y:13},{x:"2026-05-06",y:9},{x:"2026-05-07",y:13},
+  {x:"2026-05-08",y:8},{x:"2026-05-09",y:1},{x:"2026-05-10",y:7},{x:"2026-05-11",y:6},
+  {x:"2026-05-12",y:2},{x:"2026-05-13",y:7},{x:"2026-05-14",y:8},{x:"2026-05-15",y:3},
+  {x:"2026-05-16",y:11},{x:"2026-05-17",y:7},{x:"2026-05-18",y:3},{x:"2026-05-19",y:4},
+  {x:"2026-05-20",y:1}
+];
+const sessions = [
+  {x:"2026-04-21",y:1},{x:"2026-04-22",y:6},{x:"2026-04-23",y:4},{x:"2026-04-24",y:3},
+  {x:"2026-04-25",y:1},{x:"2026-04-27",y:2},{x:"2026-04-28",y:2},{x:"2026-04-29",y:5},
+  {x:"2026-04-30",y:2},{x:"2026-05-01",y:3},{x:"2026-05-02",y:16},{x:"2026-05-03",y:7},
+  {x:"2026-05-04",y:31},{x:"2026-05-05",y:10},{x:"2026-05-06",y:6},{x:"2026-05-07",y:2},
+  {x:"2026-05-08",y:3},{x:"2026-05-09",y:1},{x:"2026-05-10",y:5},{x:"2026-05-11",y:2},
+  {x:"2026-05-12",y:2},{x:"2026-05-13",y:1},{x:"2026-05-14",y:6},{x:"2026-05-15",y:3},
+  {x:"2026-05-16",y:7},{x:"2026-05-17",y:2},{x:"2026-05-18",y:3},{x:"2026-05-19",y:4},
+  {x:"2026-05-20",y:1}
+];
+
+const points = [
+  ...pageviews.map(d => ({date: new Date(d.x), value: d.y, series: "Pageviews"})),
+  ...sessions.map(d => ({date: new Date(d.x), value: d.y, series: "Sessions"})),
+];
+
+const chart = Plot.plot({
+  marginLeft: 44, marginBottom: 32, marginTop: 12, marginRight: 12,
+  height: 320,
+  style: { background: "transparent", color: "#525a6b", fontFamily: "Inter, system-ui, sans-serif", fontSize: "12px" },
+  y: { grid: true, label: null },
+  x: { label: null, type: "time" },
+  color: { domain: ["Pageviews", "Sessions"], range: ["#1f3a8a", "#c79443"], legend: false },
+  marks: [
+    Plot.areaY(points, { x: "date", y: "value", fill: "series", fillOpacity: 0.12, curve: "monotone-x" }),
+    Plot.lineY(points, { x: "date", y: "value", stroke: "series", strokeWidth: 2, curve: "monotone-x" }),
+    Plot.dot(points, { x: "date", y: "value", fill: "series", r: 2.5 }),
+    Plot.ruleY([0], { stroke: "#e6e3da" }),
+  ],
+});
+document.getElementById("chart").append(chart);
+
+const pages = [
+  ["/", 92], ["/case-studies/", 13], ["/services/", 13], ["/about/", 13],
+  ["/blog/ai-courtroom-visual-evidence-rule-707/", 11], ["/blog/", 8],
+  ["/case-studies/aerial-lift-collapse/", 7], ["/practice-areas/", 7],
+  ["/about-us", 6], ["/contact", 6],
+];
+const referrers = [
+  ["medillsb.com", 6], ["zsio.net", 6], ["google.com", 4], ["linkedin.com", 3],
+  ["iuyun.net", 3], ["m.facebook.com", 1], ["ttnmdf.nsujfo.com", 1],
+  ["lcgrm.com", 1], ["brand.visualsforlaw.com", 1], ["gamecenter.nyu.edu", 1],
+];
+const channels = [
+  ["Referral", 21], ["Organic Search", 4], ["Organic Social", 3], ["Paid Ads", 1],
+];
+const countries = [
+  ["United States", 91], ["China", 14], ["France", 5], ["Germany", 2],
+  ["Singapore", 2], ["Taiwan", 2], ["Costa Rica", 2], ["Ghana", 1],
+  ["Italy", 1], ["Panama", 1],
+];
+const devices = [
+  ["Laptop", 93], ["Mobile", 22], ["Desktop", 6],
+];
+
+function renderBarTable(id, rows) {
+  const max = Math.max(...rows.map(r => r[1]));
+  const tbody = document.getElementById(id);
+  tbody.innerHTML = rows.map(([label, n]) => {
+    const pct = Math.max(4, Math.round((n / max) * 100));
+    return `<tr><td>${escapeHtml(label)}</td><td class="n bar-cell">${n.toLocaleString()}<span class="bar"><span style="width:${pct}%"></span></span></td></tr>`;
+  }).join("");
+}
+function renderDeviceTable(id, rows) {
+  const total = rows.reduce((s, [,n]) => s + n, 0);
+  document.getElementById(id).innerHTML = rows.map(([label, n]) => {
+    const pct = ((n / total) * 100).toFixed(1);
+    return `<tr><td>${escapeHtml(label)}</td><td class="n">${n}</td><td class="n">${pct}%</td></tr>`;
+  }).join("");
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
+
+renderBarTable("tbl-pages", pages);
+renderBarTable("tbl-refs", referrers);
+renderBarTable("tbl-channels", channels);
+renderBarTable("tbl-countries", countries);
+renderDeviceTable("tbl-devices", devices);
+</script>
+</body>
+</html>

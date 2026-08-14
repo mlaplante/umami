@@ -1,0 +1,29 @@
+# Path prefixes this fork is allowed to differ from umami-software/umami on.
+#
+# The sync-upstream workflow compares `git diff --name-only upstream/master`
+# against this list after merging. Every differing path must match a prefix
+# here, or the sync is aborted and an issue is opened instead of pushing.
+#
+# This is the "keep our changes" guarantee: it fails loudly both when one of
+# our changes is lost in a merge AND when an unexpected new delta appears.
+#
+# Blank lines and #-comments are ignored. Matching is by prefix.
+
+# Migrations run against a pooled connection hang on Netlify; point prisma at
+# the direct URL instead. Commit a41a4b894.
+prisma.config.ts
+
+# Excludes tools/** from the root pnpm workspace so pnpm-lock.yaml stays
+# byte-identical to upstream.
+pnpm-workspace.yaml
+
+# Standalone SEO reporting CLI + MCP server. No coupling to the umami
+# codebase; talks to the instance over the HTTP API.
+tools/seo-report/
+
+# This sync machinery itself.
+.github/fork-paths.txt
+.github/workflows/sync-upstream.yml
+
+# Design docs for fork-local work.
+docs/fork/

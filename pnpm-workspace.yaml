@@ -2,6 +2,9 @@ packages:
   - '**'
   - '!dist'
   - '!**/dist/**'
+  # fork-local: keep tools/* out of the root workspace so pnpm-lock.yaml stays
+  # identical to upstream and never conflicts when merging umami-software/umami
+  - '!tools/**'
 allowBuilds:
   '@parcel/watcher': false
   '@prisma/engines': true

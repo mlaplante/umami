@@ -1,0 +1,189 @@
+name: Sync upstream
+
+# Merges umami-software/umami into master automatically, but only pushes when
+# the merge is clean, our fork-local changes are all still intact, and the app
+# still builds. Any failure opens an issue instead of pushing.
+#
+# Deliberately does NOT run database migrations. Upstream ships schema changes
+# constantly; applying them to production unattended is not something this
+# workflow should ever do. Migrations stay manual.
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # Mondays, 09:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+env:
+  UPSTREAM_URL: https://github.com/umami-software/umami.git
+  # Enough for `pnpm build` to resolve config; never connected to.
+  # SKIP_DB_CHECK short-circuits scripts/check-db.js before it opens a
+  # connection and before applyMigration() would run `prisma migrate deploy`.
+  DATABASE_URL: postgresql://user:pass@localhost:5432/dummy
+  DIRECT_DATABASE_URL: postgresql://user:pass@localhost:5432/dummy
+  SKIP_DB_CHECK: 1
+
+jobs:
+  sync:
+    # Guard against this running in umami-software/umami if the fork is ever
+    # sent upstream as a PR.
+    if: github.repository != 'umami-software/umami'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name  'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          # A replayed stale resolution could silently produce a wrong merge.
+          git config rerere.enabled false
+
+      - name: Fetch upstream
+        run: |
+          git remote add upstream "$UPSTREAM_URL" 2>/dev/null || \
+            git remote set-url upstream "$UPSTREAM_URL"
+          git fetch upstream master
+
+      - name: Check for new commits
+        id: check
+        run: |
+          behind=$(git rev-list --count HEAD..upstream/master)
+          echo "behind=$behind" >> "$GITHUB_OUTPUT"
+          if [ "$behind" -eq 0 ]; then
+            echo "Already up to date with upstream."
+          else
+            echo "$behind new upstream commit(s) to merge."
+          fi
+
+      # Gate 1: the merge itself must apply without conflicts.
+      - name: Merge upstream
+        if: steps.check.outputs.behind != '0'
+        run: git merge upstream/master --no-edit
+
+      # Gate 2: our fork-local changes must all still be present, and nothing
+      # unexpected may have appeared. Compares the post-merge delta against
+      # .github/fork-paths.txt.
+      - name: Verify fork changes survived
+        if: steps.check.outputs.behind != '0'
+        run: |
+          allowed=$(grep -vE '^\s*(#|$)' .github/fork-paths.txt)
+          changed=$(git diff --name-only upstream/master)
+
+          echo "Fork delta vs upstream:"
+          echo "$changed" | sed 's/^/  /'
+
+          # Every changed path must sit under an allowed prefix.
+          unexpected=0
+          while IFS= read -r path; do
+            [ -z "$path" ] && continue
+            ok=0
+            while IFS= read -r prefix; do
+              case "$path" in "$prefix"*) ok=1; break ;; esac
+            done <<< "$allowed"
+            if [ "$ok" -eq 0 ]; then
+              echo "::error::Unexpected fork delta: $path"
+              unexpected=1
+            fi
+          done <<< "$changed"
+
+          # Every allowed prefix must still match something, i.e. nothing we
+          # care about was silently dropped by the merge.
+          missing=0
+          while IFS= read -r prefix; do
+            [ -z "$prefix" ] && continue
+            if ! echo "$changed" | grep -q "^$prefix"; then
+              echo "::error::Fork change went missing: $prefix"
+              missing=1
+            fi
+          done <<< "$allowed"
+
+          [ "$unexpected" -eq 0 ] && [ "$missing" -eq 0 ]
+
+      # Gate 2b: the root lockfile is what makes merges conflict-free. If it
+      # ever drifts from upstream, the next sync will start conflicting.
+      - name: Verify root lockfile matches upstream
+        if: steps.check.outputs.behind != '0'
+        run: |
+          if ! git diff --quiet upstream/master -- pnpm-lock.yaml; then
+            echo "::error::pnpm-lock.yaml has drifted from upstream; future merges will conflict. Check that pnpm-workspace.yaml still excludes tools/**."
+            exit 1
+          fi
+
+      - uses: pnpm/action-setup@v4
+        if: steps.check.outputs.behind != '0'
+        with:
+          # package.json has no packageManager field, so this must be explicit.
+          # Matches the version upstream's own CI tests against.
+          version: 10.15.1
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        if: steps.check.outputs.behind != '0'
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # Gate 3: it has to actually build.
+      - name: Install and build
+        if: steps.check.outputs.behind != '0'
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+
+      - name: Push
+        if: steps.check.outputs.behind != '0'
+        run: |
+          git push origin master
+          echo "### Synced ${{ steps.check.outputs.behind }} upstream commit(s)" \
+            >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Open an issue on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          # Don't pile up duplicates week over week.
+          existing=$(gh issue list --label upstream-sync --state open --limit 1 2>/dev/null || true)
+          if [ -n "$existing" ]; then
+            echo "An open upstream-sync issue already exists; not filing another."
+            exit 0
+          fi
+          gh label create upstream-sync --color d93f0b \
+            --description 'Automated upstream sync needs attention' 2>/dev/null || true
+          cat > "$RUNNER_TEMP/body.md" <<EOF
+          The automated sync from umami-software/umami did not complete, so
+          **nothing was pushed to \`master\`** — your deploy is untouched.
+
+          One of the gates failed: the merge conflicted, a fork-local change went
+          missing, the root lockfile drifted, or the build broke.
+          [See the run for which one.]($RUN_URL)
+
+          To resolve locally:
+
+          \`\`\`sh
+          git fetch upstream master
+          git merge upstream/master
+          # fix whatever it flagged, then
+          git push origin master
+          \`\`\`
+
+          Migrations are never applied automatically. If upstream added any, run
+          them yourself after deploying. See \`docs/fork/upstream-sync.md\`.
+          EOF
+          gh issue create \
+            --label upstream-sync \
+            --title 'Upstream sync needs manual attention' \
+            --body-file "$RUNNER_TEMP/body.md"

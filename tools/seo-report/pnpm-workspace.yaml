@@ -1,0 +1,5 @@
+# Marks this directory as its own pnpm workspace root so it carries a local
+# pnpm-lock.yaml instead of writing its dependencies into umami's root lockfile.
+# Keeping the root lock identical to upstream is what makes merges from
+# umami-software/umami conflict-free. See ../../pnpm-workspace.yaml.
+packages: []

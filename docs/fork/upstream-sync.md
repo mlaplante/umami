@@ -45,6 +45,10 @@ Running `pnpm install` at the repo root will not pick it up, by design. If its
 dependencies ever appear in the root `pnpm-lock.yaml`, the sync workflow fails
 loudly rather than letting the conflicts come back.
 
+The flip side: **nothing in CI ever validates `tools/seo-report/pnpm-lock.yaml`**,
+because the sync workflow only installs the root workspace. That lockfile is
+only exercised when you run `pnpm install` in the directory by hand.
+
 ## Automatic syncing
 
 `.github/workflows/sync-upstream.yml` runs Mondays at 09:00 UTC (and on demand
@@ -77,6 +81,23 @@ git push origin master
 
 Add its path prefix to `.github/fork-paths.txt` in the same commit, or the next
 sync will fail on gate 2. That failure is the feature working correctly.
+
+The check runs both ways, so a *stale* entry fails too — if you delete a
+fork-local file, or upstream adopts one of our changes so it no longer differs,
+remove its line from `fork-paths.txt`.
+
+### Two environment gotchas
+
+**Issues must stay enabled.** Forks ship with Issues disabled, which silently
+breaks the failure notification — the workflow fails, but no issue is filed.
+Issues were enabled on this fork specifically so gate failures are visible.
+Re-enable with `gh repo edit mlaplante/umami --enable-issues` if that ever
+changes.
+
+**`gh` targets upstream by default in this repo.** Because an `upstream` remote
+exists, `gh` resolves the fork's parent, so `gh workflow list` and `gh run list`
+show `umami-software/umami` unless you pass `--repo mlaplante/umami`. This is a
+good way to convince yourself the sync workflow doesn't exist when it does.
 
 ## Two things the workflow deliberately will not do
 

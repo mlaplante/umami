@@ -8,6 +8,14 @@
 # our changes is lost in a merge AND when an unexpected new delta appears.
 #
 # Blank lines and #-comments are ignored. Matching is by prefix.
+#
+# MAINTENANCE RULE: every entry below must name a path that currently exists
+# AND currently differs from upstream. The workflow checks both directions, so
+# a stale entry — one whose file you deleted, or that upstream has since
+# adopted — fails the sync with "Fork change went missing". That is intended:
+# it forces this list to stay honest. If you hit it, delete the stale entry.
+# Likewise, add a prefix here in the SAME commit that introduces a new
+# fork-local change, or the next sync will fail on the unexpected-delta check.
 
 # Migrations run against a pooled connection hang on Netlify; point prisma at
 # the direct URL instead. Commit a41a4b894.

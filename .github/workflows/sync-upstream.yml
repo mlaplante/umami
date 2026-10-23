@@ -132,7 +132,8 @@ jobs:
       - uses: actions/setup-node@v4
         if: steps.check.outputs.behind != '0'
         with:
-          node-version: 22
+          node-version-file: .nvmrc
+          check-latest: true
           cache: pnpm
 
       # Gate 3: it has to actually build.

@@ -9,8 +9,8 @@
     "mcp": "node mcp-server/server.mjs"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
-    "dotenv": "^16.4.5"
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "dotenv": "^16.6.1"
   },
   "engines": {
     "node": ">=18.17"

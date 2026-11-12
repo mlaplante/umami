@@ -35,3 +35,11 @@ tools/seo-report/
 
 # Design docs for fork-local work.
 docs/fork/
+
+# Node pin to the Oct 2026 security release (972c0ed1c): .nvmrc is the source
+# of truth and ci.yml reads it via node-version-file.
+.nvmrc
+.github/workflows/ci.yml
+
+# packageManager pin so Netlify installs pnpm 12.3.4 (0d51f4d13).
+package.json
